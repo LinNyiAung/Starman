@@ -1,0 +1,58 @@
+[
+    {
+      "starSalesAmount": 200000.0,
+      "starOtherIncome": 5000.0,
+      "starCustomerPayment": 44000.0,
+      "starTotalCashIn": 249000.0,
+      "starPurchaseAmount": 33500.0,
+      "starOtherExpense": 6000.0,
+      "starSupplierPayment": 38000.0,
+      "starDepositOwner": 0.0,
+      "starTotalCashOut": 77500.0,
+      "starTotal": 171500.0,
+      "starFilter": "Today",
+      "starCurrency": "MMK"
+    },
+    {
+      "starSalesAmount": 12300.0,
+      "starOtherIncome": 10000.0,
+      "starCustomerPayment": 50000.0,
+      "starTotalCashIn": 72300.0,
+      "starPurchaseAmount": 110600.0,
+      "starOtherExpense": 6000.0,
+      "starSupplierPayment": 45500.0,
+      "starDepositOwner": 0.0,
+      "starTotalCashOut": 162100.0,
+      "starTotal": -89800.0,
+      "starFilter": "Yesterday",
+      "starCurrency": "MMK"
+    },
+    {
+      "starSalesAmount": 360550.0,
+      "starOtherIncome": 43500.0,
+      "starCustomerPayment": 542000.0,
+      "starTotalCashIn": 946050.0,
+      "starPurchaseAmount": 329200.0,
+      "starOtherExpense": 64500.0,
+      "starSupplierPayment": 249650.0,
+      "starDepositOwner": 0.0,
+      "starTotalCashOut": 643350.0,
+      "starTotal": 302700.0,
+      "starFilter": "This Month",
+      "starCurrency": "MMK"
+    },
+    {
+      "starSalesAmount": 145950.0,
+      "starOtherIncome": 5000.0,
+      "starCustomerPayment": 119300.0,
+      "starTotalCashIn": 270250.0,
+      "starPurchaseAmount": 516400.0,
+      "starOtherExpense": 41000.0,
+      "starSupplierPayment": 74800.0,
+      "starDepositOwner": 0.0,
+      "starTotalCashOut": 632200.0,
+      "starTotal": -361950.0,
+      "starFilter": "Last Month",
+      "starCurrency": "MMK"
+    }
+  ]
