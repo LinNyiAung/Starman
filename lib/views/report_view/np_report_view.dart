@@ -97,7 +97,7 @@ class _NpReportView extends State<NpReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'Net Purchase Report',
+            'အ၀ယ်အစီရင်ခံစာ',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
@@ -215,10 +215,10 @@ class _NpReportView extends State<NpReportView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Expanded(flex: 1, child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Invoice', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('Paid Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ပြေစာအမှတ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ကျသင့်ငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ပေးငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
             ],
           ),
         ),
@@ -346,9 +346,9 @@ class _NpReportView extends State<NpReportView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTotalItem('Total Invoices', totalInvoices.toString()),
-          _buildTotalItem('Total Amount', '$totalAmount ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
-          _buildTotalItem('Total Paid Amount', '$totalPaidAmount ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
+          _buildTotalItem('ပြေစာအရေအတွက်', totalInvoices.toString()),
+          _buildTotalItem('ကျသင့်ငွေပေါင်း', '$totalAmount ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
+          _buildTotalItem('ပေးငွေပေါင်း', '$totalPaidAmount ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
         ],
       ),
     );

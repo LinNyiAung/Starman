@@ -84,22 +84,22 @@ class NavBar extends StatelessWidget {
           _listTile("ငွေအဝင်အထွက်အစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('cfreport');
           }),
-          _listTile("Income/Expense", Icons.money, () {
+          _listTile("၀င်ငွေ/အသုံးစရိတ်အစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('expreport');
           }),
-          _listTile("CFD", Icons.money, () {
+          _listTile("နေ့အလိုက်ဝင်ငွေထွက်ငွေအစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('cfdreport');
           }),
-          _listTile("Net Sale", Icons.money, () {
+          _listTile("အရောင်းအစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('nsreport');
           }),
-          _listTile("Sale Items", Icons.money, () {
+          _listTile("ကုန်ပစ္စည်းအရောင်းအစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('sireport');
           }),
-          _listTile("Net Purchase", Icons.money, () {
+          _listTile("အ၀ယ်အစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('npreport');
           }),
-          _listTile("Purchase Items", Icons.money, () {
+          _listTile("ကုန်ပစ္စည်းအ၀ယ်အစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('pireport');
           }),
           _listTile("Setting", Icons.settings, () {}),

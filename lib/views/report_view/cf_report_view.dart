@@ -91,7 +91,7 @@ class _CfReportView extends State<CfReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'Cashflow Report',
+            'ငွေအ၀င်အထွက်အစီရင်ခံစာ',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
@@ -164,12 +164,12 @@ class _CfReportView extends State<CfReportView> {
     Map<String, dynamic> data = filteredData[0];
 
     return _buildSectionCashIn(
-      sectionTitle: 'Cash In',
+      sectionTitle: 'ငွေအ၀င်',
       items: [
-        _buildDataItem('Sale Amount', data['starSalesAmount']),
-        _buildDataItem('Other Income', data['starOtherIncome']),
-        _buildDataItem('Customer Payment', data['starCustomerPayment']),
-        _buildDataItem('Total CashIn', data['starTotalCashIn']),
+        _buildDataItem('ရောင်းရငွေ', data['starSalesAmount']),
+        _buildDataItem('တခြား၀င်ငွေ', data['starOtherIncome']),
+        _buildDataItem('ကုန်၀ယ်သူမှပေးချေငွေ', data['starCustomerPayment']),
+        _buildDataItem('စုစုပေါင်းငွေအ၀င်', data['starTotalCashIn']),
       ],
     );
   }
@@ -189,13 +189,13 @@ class _CfReportView extends State<CfReportView> {
     Map<String, dynamic> data = filteredData[0];
 
     return _buildSectionCashOut(
-      sectionTitle: 'Cash Out',
+      sectionTitle: 'ငွေအထွက်',
       items: [
-        _buildDataItem('Purchase Amount', data['starPurchaseAmount']),
-        _buildDataItem('Other Expense', data['starOtherExpense']),
-        _buildDataItem('Supplier Payment', data['starSupplierPayment']),
-        _buildDataItem('Deposit Owner', data['starDepositOwner']),
-        _buildDataItem('Total CashOut', data['starTotalCashOut']),
+        _buildDataItem('ကုန်၀ယ်ငွေ', data['starPurchaseAmount']),
+        _buildDataItem('တခြားအသုံးစရိတ်', data['starOtherExpense']),
+        _buildDataItem('ကုန်ရောင်းသူအားပေးချေငွေ', data['starSupplierPayment']),
+        _buildDataItem('ပိုင်ရှင်ထံအပ်ငွေ', data['starDepositOwner']),
+        _buildDataItem('စုစုပေါင်းငွေအထွက်', data['starTotalCashOut']),
 
       ],
     );
@@ -353,8 +353,8 @@ class _CfReportView extends State<CfReportView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDataItem('Total CashIn', CashIn),
-          _buildDataItem('Total CashOut', CashOut),
+          _buildDataItem('စုစုပေါင်းငွေအ၀င်', CashIn),
+          _buildDataItem('စုစုပေါင်းငွေအထွက်', CashOut),
         ],
       ),
     );
@@ -416,7 +416,7 @@ class _CfReportView extends State<CfReportView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          _buildDataItem('Total', TotalAmount),
+          _buildDataItem('စုစုပေါင်း', TotalAmount),
 
         ],
       ),

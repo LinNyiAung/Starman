@@ -91,7 +91,7 @@ class _ProfitLostReportView extends State<ProfitLostReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'Profit Loss Report',
+            'အရှုံးအမြတ်အစီရင်ခံစာ',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
@@ -162,14 +162,14 @@ class _ProfitLostReportView extends State<ProfitLostReportView> {
     Map<String, dynamic> data = filteredData[0];
 
     return _buildSectionProfit(
-      sectionTitle: 'Profit Section',
+      sectionTitle: '၀င်ငွေ',
       items: [
-        _buildDataItem('Sale Amount', data['starSaleAmount']),
-        _buildDataItem('Sold Item Value', data['starSoldItemValue']),
-        _buildDataItem('Purchase Discount', data['starPurchaseDiscount']),
-        _buildDataItem('Other Income', data['starOtherIncome']),
-        _buildDataItem('Extra Charge', data['starExtraCharge']),
-        _buildDataItem('Total Income', data['starTotalIncome']),
+        _buildDataItem('အရောင်းပမာဏ', data['starSaleAmount']),
+        _buildDataItem('ကုန်ပစ္စည်းအရင်းတန်ဖိုး', data['starSoldItemValue']),
+        _buildDataItem('အဝယ်လျှော့ဈေး', data['starPurchaseDiscount']),
+        _buildDataItem('တခြား၀င်ငွေ', data['starOtherIncome']),
+        _buildDataItem('အပိုပေးငွေ', data['starExtraCharge']),
+        _buildDataItem('စုစုပေါင်း၀င်ငွေ', data['starTotalIncome']),
       ],
     );
   }
@@ -189,14 +189,14 @@ class _ProfitLostReportView extends State<ProfitLostReportView> {
     Map<String, dynamic> data = filteredData[0];
 
     return _buildSectionLoss(
-      sectionTitle: 'Loss Section',
+      sectionTitle: 'ထွက်ငွေ',
       items: [
-        _buildDataItem('Sales Discount', data['starSalesDiscount']),
-        _buildDataItem('Sales Tax', data['starSalesTax']),
-        _buildDataItem('Purchase Tax', data['starPurchaseTax']),
-        _buildDataItem('Damaged/Lost Amount', data['starDamagedLostAmount']),
-        _buildDataItem('Other Expense', data['starOtherExpense']),
-        _buildDataItem('Total Expense', data['starTotalExpense']),
+        _buildDataItem('အရောင်းလျှော့ဈေး', data['starSalesDiscount']),
+        _buildDataItem('အရောင်းအခွန်', data['starSalesTax']),
+        _buildDataItem('အဝယ်အခွန်', data['starPurchaseTax']),
+        _buildDataItem('ကုန်ပစ္စည်းဆုံးရှုံးတန်ဖိုး', data['starDamagedLostAmount']),
+        _buildDataItem('တခြားအသုံးစရိတ်', data['starOtherExpense']),
+        _buildDataItem('စုစုပေါင်းအသုံးစရိတ်', data['starTotalExpense']),
       ],
     );
   }
@@ -350,7 +350,7 @@ class _ProfitLostReportView extends State<ProfitLostReportView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildDataItem('Profit/Loss', profitloss),
+          _buildDataItem('အရှုံး/အမြတ်', profitloss),
         ],
       ),
     );

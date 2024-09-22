@@ -88,7 +88,7 @@ class _EXPReportView extends State<EXPReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'Income/Expense Report',
+            '၀င်ငွေ/အသုံးစရိတ်အစီရင်ခံစာ',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
@@ -173,9 +173,9 @@ class _EXPReportView extends State<EXPReportView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: const [
-              Expanded(flex: 1, child: Text('ID', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 3, child: Text('Type', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 3, child: Text('Amount', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 3, child: Text('အမျိုးအစား', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 3, child: Text('ပေးငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
             ],
           ),
         ),
@@ -304,7 +304,7 @@ class _EXPReportView extends State<EXPReportView> {
         DropdownMenuItem<int?>(
           value: null,
           child: const Text(
-            'All',
+            'အားလုံး',
             style: TextStyle(
               fontSize: 13,
               color: Colors.black,
@@ -314,7 +314,7 @@ class _EXPReportView extends State<EXPReportView> {
         DropdownMenuItem<int>(
           value: 1,
           child: const Text(
-            'Income',
+            '၀င်ငွေ',
             style: TextStyle(
               fontSize: 13,
               color: Colors.black,
@@ -324,7 +324,7 @@ class _EXPReportView extends State<EXPReportView> {
         DropdownMenuItem<int>(
           value: 2,
           child: const Text(
-            'Expense',
+            'ထွက်ငွေ',
             style: TextStyle(
               fontSize: 13,
               color: Colors.black,
@@ -373,7 +373,7 @@ class _EXPReportView extends State<EXPReportView> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
-            'Total',
+            'စုစုပေါင်း',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
