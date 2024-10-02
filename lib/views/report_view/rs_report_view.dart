@@ -16,11 +16,11 @@ late SharedPreferences prefs;
 StarGroupModel? _starGroupModel;
 FusionController fusionController = FusionController();
 
-class SbReportView extends StatefulWidget {
-  const SbReportView({super.key});
+class RsReportView extends StatefulWidget {
+  const RsReportView({super.key});
 
   @override
-  State<SbReportView> createState() => _SbReportView();
+  State<RsReportView> createState() => _RsReportView();
 }
 
 // Map of warehouse names to user IDs
@@ -33,7 +33,7 @@ final Map<String, String> warehouseToUserIdMap = {
 
 
 
-class _SbReportView extends State<SbReportView> {
+class _RsReportView extends State<RsReportView> {
   int? _reamaingDay;
   LastSubscriptionModel? _lastSubscriptionModel;
   String _selectedWarehouse = 'DF-Acer'; // Default warehouse selection
@@ -59,7 +59,7 @@ class _SbReportView extends State<SbReportView> {
       _remainingBox();
     }
     await _loadSbDataFromFile(); // Load initial data
-    _updateCategories(); // Update categories when data is loaded
+    await _updateCategories(); // Update categories when data is loaded
   }
 
   Future<void> _loadSbDataFromFile() async {
@@ -81,7 +81,7 @@ class _SbReportView extends State<SbReportView> {
   // Method to update the list of categories from loaded data
   Future<void> _updateCategories() async{
     if (starSBData.isNotEmpty) {
-      List<dynamic> stockBalanceList = await starSBData[0]['starStockBalanceList'];
+      List<dynamic> stockBalanceList = await starSBData;
       Set<String> categoriesSet = stockBalanceList.map((item) => item['starCategoryName'] as String).toSet();
       setState(() {
         _categories = ['All', ...categoriesSet]; // Add 'All' as a default option
@@ -173,7 +173,7 @@ class _SbReportView extends State<SbReportView> {
     }
 
     // Filter the list based on the selected category
-    List<dynamic> starStockBalanceList = starSBData[0]['starStockBalanceList'].where((item) {
+    List<dynamic> starStockBalanceList = starSBData.where((item) {
       return _selectedCategory == 'All' || item['starCategoryName'] == _selectedCategory;
     }).toList();
 
@@ -187,8 +187,8 @@ class _SbReportView extends State<SbReportView> {
             children: const [
               Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
               Expanded(flex: 2, child: Text('အမည်', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('အရေအတွက်', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('ယူနစ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ဂိုထောင်လက်ကျန်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('အနည်းဆုံးလက်ကျန်', style: TextStyle(fontWeight: FontWeight.bold))),
             ],
           ),
         ),
@@ -205,8 +205,8 @@ class _SbReportView extends State<SbReportView> {
                 children: [
                   Expanded(flex: 1, child: Text('${index + 1}')),
                   Expanded(flex: 2, child: Text(item['starItemName'] ?? '')),
-                  Expanded(flex: 2, child: Text('${item['starQty']} ${item['starUnit']}')),
-                  Expanded(flex: 2, child: Text('${item['starAmount']} MMK')),
+                  Expanded(flex: 2, child: Text('${item['starInventoryQty']} ${item['starUnit']}')),
+                  Expanded(flex: 2, child: Text('${item['starReorderQty']} ${item['starUnit']}')),
                 ],
               ),
             );
@@ -228,7 +228,7 @@ class _SbReportView extends State<SbReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'ကုန်ပစ္စည်းလက်ကျန်အစီရင်ခံစာ',
+            'အရေအတွက်နည်းနေသောကုန်ပစ္စည်း',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
@@ -293,18 +293,15 @@ class _SbReportView extends State<SbReportView> {
   Widget _buildTotalAmountBox() {
     // Filter the data based on the selected category
     List<dynamic> filteredStockBalanceList = starSBData.isNotEmpty
-        ? starSBData[0]['starStockBalanceList'].where((item) {
-      return _selectedCategory == 'All' || item['starCategoryName'] == _selectedCategory;
-    }).toList()
-        : [];
+        ? starSBData.where((item) {
+      return item['starCategoryName']  == _selectedCategory;
+    }).toList() : [];
 
-    // Calculate the total amount and total quantity based on the filtered data
-    double totalAmount = filteredStockBalanceList.fold(0.0, (sum, item) {
-      return sum + (item['starAmount'] as num).toDouble();
-    });
+
+
 
     double totalQuantity = filteredStockBalanceList.fold(0.0, (sum, item) {
-      return sum + (item['starQty'] as num).toDouble();
+      return sum + (item['starFulfillQty'] as num).toDouble();
     });
 
     return Container(
@@ -320,37 +317,21 @@ class _SbReportView extends State<SbReportView> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'စုစုပေါင်းအရေအတွက်:',
+                'အော်ဒါမှာရမည့်ကုန်ပစ္စည်းအရေအတွက်:',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               Text(
                 '$totalQuantity units', // Display total quantity
                 style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, ),
+                  fontSize: 16, fontWeight: FontWeight.bold, ),
               ),
             ],
           ),
-          const SizedBox(height: 10), // Add spacing between quantity and amount
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'စုစုပေါင်း:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                '$totalAmount MMK', // Display total amount
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, ),
-              ),
-            ],
-          ),
+
         ],
       ),
     );
   }
-
-
 
 // Helper method to create each row of the total box
   Widget _buildTotalItem(String title, String value) {
@@ -377,6 +358,10 @@ class _SbReportView extends State<SbReportView> {
       ),
     );
   }
+
+
+
+
 
 
 
@@ -469,7 +454,7 @@ class _SbReportView extends State<SbReportView> {
 
       var file = await fusionController.stockData(
         userId,
-        "SB",
+        "RS",
       );
 
       if (file != null) {

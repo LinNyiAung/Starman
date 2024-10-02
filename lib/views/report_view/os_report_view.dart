@@ -16,11 +16,11 @@ late SharedPreferences prefs;
 StarGroupModel? _starGroupModel;
 FusionController fusionController = FusionController();
 
-class SbReportView extends StatefulWidget {
-  const SbReportView({super.key});
+class OsReportView extends StatefulWidget {
+  const OsReportView({super.key});
 
   @override
-  State<SbReportView> createState() => _SbReportView();
+  State<OsReportView> createState() => _OsReportView();
 }
 
 // Map of warehouse names to user IDs
@@ -33,17 +33,20 @@ final Map<String, String> warehouseToUserIdMap = {
 
 
 
-class _SbReportView extends State<SbReportView> {
+class _OsReportView extends State<OsReportView> {
   int? _reamaingDay;
   LastSubscriptionModel? _lastSubscriptionModel;
   String _selectedWarehouse = 'DF-Acer'; // Default warehouse selection
   String _selectedDateFilter = 'Today';
-  String _selectedCategory = 'All'; // Add category filter
 
 
 
-  List<Map<String, dynamic>> starSBData = [];
-  List<String> _categories = ['All']; // List to hold unique categories
+  List<Map<String, dynamic>> starSIData = [];
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void didChangeDependencies() {
@@ -58,162 +61,22 @@ class _SbReportView extends State<SbReportView> {
     if (_reamaingDay! < 10) {
       _remainingBox();
     }
-    await _loadSbDataFromFile(); // Load initial data
-    _updateCategories(); // Update categories when data is loaded
+    await _loadSiDataFromFile(); // Load initial data
   }
 
-  Future<void> _loadSbDataFromFile() async {
+  Future<void> _loadSiDataFromFile() async {
     try {
       // Load data from the JSON file (assuming the path is known)
       final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/StarSB.json');
+      final file = File('${directory.path}/StarSI.json');
       if (file.existsSync()) {
-        await _loadSbData(file);
-        await _updateCategories(); // Update categories after loading data
+        await _loadSiData(file);
       } else {
-        log('StarSB.json file not found');
+        log('StarSI.json file not found');
       }
     } catch (e) {
       log('Error loading data: $e');
     }
-  }
-
-  // Method to update the list of categories from loaded data
-  Future<void> _updateCategories() async{
-    if (starSBData.isNotEmpty) {
-      List<dynamic> stockBalanceList = await starSBData[0]['starStockBalanceList'];
-      Set<String> categoriesSet = stockBalanceList.map((item) => item['starCategoryName'] as String).toSet();
-      setState(() {
-        _categories = ['All', ...categoriesSet]; // Add 'All' as a default option
-      });
-    } else {
-      // If no data, reset categories
-      setState(() {
-        _categories = ['All'];
-      });
-    }
-  }
-
-  // Reload data when warehouse selection changes
-  Widget _buildWarehouseDropdown() {
-    return Row(
-      children: [
-        DropdownButton<String>(
-          value: _selectedWarehouse,
-          onChanged: (String? newValue) async {
-            setState(() {
-              _selectedWarehouse = newValue!;
-              _selectedCategory = 'All'; // Reset category filter
-              starSBData = []; // Clear data immediately
-              _categories = ['All']; // Clear categories immediately
-            });
-
-            // Load new data after warehouse change
-            await _loadSbDataFromFile();
-            await _updateCategories(); // Update categories after new data is loaded
-          },
-          items: warehouseToUserIdMap.keys.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value,
-                style: TextStyle(fontSize: 13, color: Colors.black),
-              ),
-            );
-          }).toList(),
-          underline: const SizedBox(), // Removes underline from DropdownButton
-          style: const TextStyle(color: Colors.black, fontSize: 13),
-        ),
-        const Spacer(),
-        Text(
-          DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now()),
-          style: const TextStyle(fontSize: 13, color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  // Category Filter Dropdown
-  Widget _buildCategoryDropdown() {
-    return Row(
-      children: [
-        DropdownButton<String>(
-          value: _selectedCategory,
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedCategory = newValue!;
-            });
-          },
-          items: _categories.map<DropdownMenuItem<String>>((String category) {
-            return DropdownMenuItem<String>(
-              value: category,
-              child: Text(
-                category,
-                style: TextStyle(fontSize: 13, color: Colors.black),
-              ),
-            );
-          }).toList(),
-          underline: const SizedBox(), // Removes underline from DropdownButton
-          style: const TextStyle(color: Colors.black, fontSize: 13),
-        ),
-        const Spacer(),
-      ],
-    );
-  }
-
-  // Filtered Stock Balance List
-  Widget _buildStockBalanceList() {
-    if (starSBData.isEmpty) {
-      return const Center(
-        child: Text(
-          'No data available, click the download button.',
-          style: TextStyle(fontSize: 16, color: Colors.redAccent),
-        ),
-      );
-    }
-
-    // Filter the list based on the selected category
-    List<dynamic> starStockBalanceList = starSBData[0]['starStockBalanceList'].where((item) {
-      return _selectedCategory == 'All' || item['starCategoryName'] == _selectedCategory;
-    }).toList();
-
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-          color: Colors.grey[300],
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('အမည်', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('အရေအတွက်', style: TextStyle(fontWeight: FontWeight.bold))),
-              Expanded(flex: 2, child: Text('ယူနစ်', style: TextStyle(fontWeight: FontWeight.bold))),
-            ],
-          ),
-        ),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: starStockBalanceList.length,
-          itemBuilder: (context, index) {
-            var item = starStockBalanceList[index];
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(flex: 1, child: Text('${index + 1}')),
-                  Expanded(flex: 2, child: Text(item['starItemName'] ?? '')),
-                  Expanded(flex: 2, child: Text('${item['starQty']} ${item['starUnit']}')),
-                  Expanded(flex: 2, child: Text('${item['starAmount']} MMK')),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
-    );
   }
 
   @override
@@ -228,13 +91,13 @@ class _SbReportView extends State<SbReportView> {
         ),
         appBar: AppBar(
           title: const Text(
-            'ကုန်ပစ္စည်းလက်ကျန်အစီရင်ခံစာ',
+            'ပေးရန်ရှိအစီရင်ခံစာ',
             style: TextStyle(fontSize: 18),
           ),
           actions: [
             IconButton(
               onPressed: () async {
-                await _downLoadData(); await _updateCategories();
+                await _downLoadData();
               },
               icon: Icon(
                 Icons.cloud_download,
@@ -256,12 +119,11 @@ class _SbReportView extends State<SbReportView> {
           child: ListView(
             children: [
               _buildWarehouseDropdown(),
-              const SizedBox(height: 10),
-              _buildCategoryDropdown(),
+
               const SizedBox(height: 20),
               _buildTotalAmountBox(),
               const SizedBox(height: 10),
-              _buildStockBalanceList(),
+              _buildSaleItemList(),
             ],
           ),
         ),
@@ -274,6 +136,106 @@ class _SbReportView extends State<SbReportView> {
 
 
 
+  Widget _buildSaleItemList() {
+
+
+
+
+
+    if (starSIData.isEmpty) {
+      return const Center(
+        child: Text(
+          'No data available, click the download button.',
+          style: TextStyle(fontSize: 16, color: Colors.redAccent),
+        ),
+      );
+    }
+
+    List<dynamic> starItemList = starSIData[0]['starOutstandingList'];
+
+    return Column(
+      children: [
+        // Header row with titles
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+          color: Colors.grey[300],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('အမည်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ဖုန်းနံပတ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ကျန်ငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('လိပ်စာ', style: TextStyle(fontWeight: FontWeight.bold))),
+            ],
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: starItemList.length,
+          itemBuilder: (context, index) {
+            var item = starItemList[index];
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(flex: 1, child: Text('${index + 1}')),
+                  Expanded(flex: 2, child: Text(item['starName'] ?? '')),
+                  Expanded(flex: 2, child: Text('${item['starPhone']}')),
+                  Expanded(flex: 2, child: Text('${item['starBalance']} MMK')),
+                  Expanded(flex: 2, child: Text('${item['starAddress']}')),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+
+
+  Widget _buildWarehouseDropdown() {
+    return Row(
+      children: [
+        DropdownButton<String>(
+          value: _selectedWarehouse,
+          onChanged: (String? newValue) {
+            setState(() {
+              _selectedWarehouse = newValue!;
+              // Reset user name filter on warehouse change
+            });
+          },
+          items: warehouseToUserIdMap.keys
+              .map<DropdownMenuItem<String>>((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.black,
+                ),
+              ),
+            );
+          }).toList(),
+          underline: const SizedBox(), // Removes underline from DropdownButton
+          style: const TextStyle(color: Colors.black, fontSize: 13),
+        ),
+        const Spacer(),
+        Text(
+          DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now()),
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
 
 
 
@@ -283,29 +245,23 @@ class _SbReportView extends State<SbReportView> {
 
 
 
-
-
-
-
-
-
-// Total Quantity and Amount Box with Category Filter
+// Method to build the Total Amount Box
   Widget _buildTotalAmountBox() {
-    // Filter the data based on the selected category
-    List<dynamic> filteredStockBalanceList = starSBData.isNotEmpty
-        ? starSBData[0]['starStockBalanceList'].where((item) {
-      return _selectedCategory == 'All' || item['starCategoryName'] == _selectedCategory;
-    }).toList()
-        : [];
+    double totalQty = 0;
+    double totalAmount = 0;
 
-    // Calculate the total amount and total quantity based on the filtered data
-    double totalAmount = filteredStockBalanceList.fold(0.0, (sum, item) {
-      return sum + (item['starAmount'] as num).toDouble();
-    });
 
-    double totalQuantity = filteredStockBalanceList.fold(0.0, (sum, item) {
-      return sum + (item['starQty'] as num).toDouble();
-    });
+
+
+
+    if (starSIData.isNotEmpty) {
+      List<dynamic> starSIItemList = starSIData[0]['starOutstandingList'];
+
+      // Calculate the total invoices, total amount, and total paid amount
+      totalQty = starSIItemList.length.toDouble();
+      totalAmount = starSIItemList.fold(0, (sum, item) => sum + (item['starBalance'] as num).toDouble());
+
+    }
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -316,41 +272,13 @@ class _SbReportView extends State<SbReportView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'စုစုပေါင်းအရေအတွက်:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                '$totalQuantity units', // Display total quantity
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10), // Add spacing between quantity and amount
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'စုစုပေါင်း:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                '$totalAmount MMK', // Display total amount
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold, ),
-              ),
-            ],
-          ),
+          _buildTotalItem('ကုန်ရောင်းသူစုစုပေါင်း', totalQty.toString()),
+          _buildTotalItem('ပေးရန်လက်ကျန်‌ငွေစုစုပေါင်း', '$totalAmount ${starSIData.isNotEmpty ? starSIData[0]['starCurrency'] : ''}'),
+
         ],
       ),
     );
   }
-
-
 
 // Helper method to create each row of the total box
   Widget _buildTotalItem(String title, String value) {
@@ -467,9 +395,9 @@ class _SbReportView extends State<SbReportView> {
       // Get the userId based on the selected warehouse
       String userId = warehouseToUserIdMap[_selectedWarehouse] ?? '';
 
-      var file = await fusionController.stockData(
+      var file = await fusionController.outstandingData(
         userId,
-        "SB",
+        "OS",
       );
 
       if (file != null) {
@@ -513,7 +441,7 @@ class _SbReportView extends State<SbReportView> {
           final outFile = File(filename);
           await outFile.create(recursive: true);
           await outFile.writeAsBytes(file.content as List<int>);
-          await _loadSbData(outFile);
+          await _loadSiData(outFile);
           log('File created: ${outFile.path}');
         } else {
           // If it's a directory, ensure it exists
@@ -529,7 +457,7 @@ class _SbReportView extends State<SbReportView> {
     }
   }
 
-  Future<void> _loadSbData(File file) async {
+  Future<void> _loadSiData(File file) async {
     try {
       // Read the file
       String jsonData = await file.readAsString();
@@ -540,7 +468,7 @@ class _SbReportView extends State<SbReportView> {
       if (parsedJson is List) {
         // If it's a list, handle it as such
         setState(() {
-          starSBData = parsedJson
+          starSIData = parsedJson
               .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
               .toList();
         });
@@ -548,14 +476,13 @@ class _SbReportView extends State<SbReportView> {
         // If it's a map, adjust your logic accordingly
         setState(() {
           // Assuming you want to store the map in a list format
-          starSBData = [parsedJson];
+          starSIData = [parsedJson];
         });
       }
-
+      log(starSIData.toString());
       log('Data loaded successfully from ${file.path}');
     } catch (e) {
       log('Error parsing JSON data: $e');
     }
   }
-
 }

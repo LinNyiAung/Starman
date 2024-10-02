@@ -102,6 +102,15 @@ class NavBar extends StatelessWidget {
           _listTile("ကုန်ပစ္စည်းအ၀ယ်အစီရင်ခံစာ", Icons.money, () {
             Get.offAndToNamed('pireport');
           }),
+          _listTile("ကုန်ပစ္စည်းလက်ကျန်အစီရင်ခံစာ", Icons.money, () {
+            Get.offAndToNamed('sbreport');
+          }),
+          _listTile("အရေအတွက်နည်းနေသောကုန်ပစ္စည်း", Icons.money, () {
+            Get.offAndToNamed('rsreport');
+          }),
+          _listTile("ပေးရန်ရှိအစီရင်ခံစာ", Icons.money, () {
+            Get.offAndToNamed('osreport');
+          }),
           _listTile("Setting", Icons.settings, () {}),
         ],
       ),
