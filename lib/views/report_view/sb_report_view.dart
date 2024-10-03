@@ -108,9 +108,7 @@ class _SbReportView extends State<SbReportView> {
               _categories = ['All']; // Clear categories immediately
             });
 
-            // Load new data after warehouse change
-            await _loadSbDataFromFile();
-            await _updateCategories(); // Update categories after new data is loaded
+
           },
           items: warehouseToUserIdMap.keys.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(

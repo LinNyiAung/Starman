@@ -71,48 +71,50 @@ class NavBar extends StatelessWidget {
   }
 
   Widget _listGroup() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _listTile("အရှုံးအမြတ်အစီရင်ခံစာ", Icons.home, () {
-            Get.offAndToNamed('profitlost');
-          }),
-          _listTile("ငွေအဝင်အထွက်အစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('cfreport');
-          }),
-          _listTile("၀င်ငွေ/အသုံးစရိတ်အစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('expreport');
-          }),
-          _listTile("နေ့အလိုက်ဝင်ငွေထွက်ငွေအစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('cfdreport');
-          }),
-          _listTile("အရောင်းအစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('nsreport');
-          }),
-          _listTile("ကုန်ပစ္စည်းအရောင်းအစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('sireport');
-          }),
-          _listTile("အ၀ယ်အစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('npreport');
-          }),
-          _listTile("ကုန်ပစ္စည်းအ၀ယ်အစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('pireport');
-          }),
-          _listTile("ကုန်ပစ္စည်းလက်ကျန်အစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('sbreport');
-          }),
-          _listTile("အရေအတွက်နည်းနေသောကုန်ပစ္စည်း", Icons.money, () {
-            Get.offAndToNamed('rsreport');
-          }),
-          _listTile("ပေးရန်ရှိအစီရင်ခံစာ", Icons.money, () {
-            Get.offAndToNamed('osreport');
-          }),
-          _listTile("Setting", Icons.settings, () {}),
-        ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 20,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            _listTile("အရှုံးအမြတ်အစီရင်ခံစာ", Icons.home, () {
+              Get.offAndToNamed('profitlost');
+            }),
+            _listTile("ငွေအဝင်အထွက်အစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('cfreport');
+            }),
+            _listTile("၀င်ငွေ/အသုံးစရိတ်အစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('expreport');
+            }),
+            _listTile("နေ့အလိုက်ဝင်ငွေထွက်ငွေအစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('cfdreport');
+            }),
+            _listTile("အရောင်းအစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('nsreport');
+            }),
+            _listTile("ကုန်ပစ္စည်းအရောင်းအစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('sireport');
+            }),
+            _listTile("အ၀ယ်အစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('npreport');
+            }),
+            _listTile("ကုန်ပစ္စည်းအ၀ယ်အစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('pireport');
+            }),
+            _listTile("ကုန်ပစ္စည်းလက်ကျန်အစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('sbreport');
+            }),
+            _listTile("အရေအတွက်နည်းနေသောကုန်ပစ္စည်း", Icons.money, () {
+              Get.offAndToNamed('rsreport');
+            }),
+            _listTile("ပေးရန်ရှိအစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('osreport');
+            }),
+            _listTile("Setting", Icons.settings, () {}),
+          ],
+        ),
       ),
     );
   }

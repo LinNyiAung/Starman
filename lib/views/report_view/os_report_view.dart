@@ -151,7 +151,7 @@ class _OsReportView extends State<OsReportView> {
       );
     }
 
-    List<dynamic> starItemList = starSIData[0]['starOutstandingList'];
+    List<dynamic> starItemList = starSIData[0]['starOutstandingList']?? [];
 
     return Column(
       children: [
@@ -255,7 +255,7 @@ class _OsReportView extends State<OsReportView> {
 
 
     if (starSIData.isNotEmpty) {
-      List<dynamic> starSIItemList = starSIData[0]['starOutstandingList'];
+      List<dynamic> starSIItemList = starSIData[0]['starOutstandingList']?? [];
 
       // Calculate the total invoices, total amount, and total paid amount
       totalQty = starSIItemList.length.toDouble();
@@ -297,7 +297,7 @@ class _OsReportView extends State<OsReportView> {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
           ),

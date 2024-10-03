@@ -108,9 +108,7 @@ class _RsReportView extends State<RsReportView> {
               _categories = ['All']; // Clear categories immediately
             });
 
-            // Load new data after warehouse change
-            await _loadSbDataFromFile();
-            await _updateCategories(); // Update categories after new data is loaded
+
           },
           items: warehouseToUserIdMap.keys.map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
@@ -318,7 +316,7 @@ class _RsReportView extends State<RsReportView> {
             children: [
               const Text(
                 'အော်ဒါမှာရမည့်ကုန်ပစ္စည်းအရေအတွက်:',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Text(
                 '$totalQuantity units', // Display total quantity
