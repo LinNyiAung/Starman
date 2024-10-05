@@ -41,7 +41,7 @@ class _OsReportView extends State<OsReportView> {
 
 
 
-  List<Map<String, dynamic>> starSIData = [];
+  List<Map<String, dynamic>> starOSData = [];
 
   @override
   void initState() {
@@ -61,16 +61,16 @@ class _OsReportView extends State<OsReportView> {
     if (_reamaingDay! < 10) {
       _remainingBox();
     }
-    await _loadSiDataFromFile(); // Load initial data
+    await _loadOsDataFromFile(); // Load initial data
   }
 
-  Future<void> _loadSiDataFromFile() async {
+  Future<void> _loadOsDataFromFile() async {
     try {
       // Load data from the JSON file (assuming the path is known)
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/StarSI.json');
       if (file.existsSync()) {
-        await _loadSiData(file);
+        await _loadOsData(file);
       } else {
         log('StarSI.json file not found');
       }
@@ -142,7 +142,7 @@ class _OsReportView extends State<OsReportView> {
 
 
 
-    if (starSIData.isEmpty) {
+    if (starOSData.isEmpty) {
       return const Center(
         child: Text(
           'No data available, click the download button.',
@@ -151,7 +151,7 @@ class _OsReportView extends State<OsReportView> {
       );
     }
 
-    List<dynamic> starItemList = starSIData[0]['starOutstandingList']?? [];
+    List<dynamic> starItemList = starOSData[0]['starOutstandingList']?? [];
 
     return Column(
       children: [
@@ -254,8 +254,8 @@ class _OsReportView extends State<OsReportView> {
 
 
 
-    if (starSIData.isNotEmpty) {
-      List<dynamic> starSIItemList = starSIData[0]['starOutstandingList']?? [];
+    if (starOSData.isNotEmpty) {
+      List<dynamic> starSIItemList = starOSData[0]['starOutstandingList']?? [];
 
       // Calculate the total invoices, total amount, and total paid amount
       totalQty = starSIItemList.length.toDouble();
@@ -273,7 +273,7 @@ class _OsReportView extends State<OsReportView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTotalItem('ကုန်ရောင်းသူစုစုပေါင်း', totalQty.toString()),
-          _buildTotalItem('ပေးရန်လက်ကျန်‌ငွေစုစုပေါင်း', '$totalAmount ${starSIData.isNotEmpty ? starSIData[0]['starCurrency'] : ''}'),
+          _buildTotalItem('ပေးရန်လက်ကျန်‌ငွေစုစုပေါင်း', '$totalAmount ${starOSData.isNotEmpty ? starOSData[0]['starCurrency'] : ''}'),
 
         ],
       ),
@@ -441,7 +441,7 @@ class _OsReportView extends State<OsReportView> {
           final outFile = File(filename);
           await outFile.create(recursive: true);
           await outFile.writeAsBytes(file.content as List<int>);
-          await _loadSiData(outFile);
+          await _loadOsData(outFile);
           log('File created: ${outFile.path}');
         } else {
           // If it's a directory, ensure it exists
@@ -457,7 +457,7 @@ class _OsReportView extends State<OsReportView> {
     }
   }
 
-  Future<void> _loadSiData(File file) async {
+  Future<void> _loadOsData(File file) async {
     try {
       // Read the file
       String jsonData = await file.readAsString();
@@ -468,7 +468,7 @@ class _OsReportView extends State<OsReportView> {
       if (parsedJson is List) {
         // If it's a list, handle it as such
         setState(() {
-          starSIData = parsedJson
+          starOSData = parsedJson
               .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
               .toList();
         });
@@ -476,10 +476,10 @@ class _OsReportView extends State<OsReportView> {
         // If it's a map, adjust your logic accordingly
         setState(() {
           // Assuming you want to store the map in a list format
-          starSIData = [parsedJson];
+          starOSData = [parsedJson];
         });
       }
-      log(starSIData.toString());
+      log(starOSData.toString());
       log('Data loaded successfully from ${file.path}');
     } catch (e) {
       log('Error parsing JSON data: $e');

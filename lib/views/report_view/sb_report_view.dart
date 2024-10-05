@@ -37,7 +37,7 @@ class _SbReportView extends State<SbReportView> {
   int? _reamaingDay;
   LastSubscriptionModel? _lastSubscriptionModel;
   String _selectedWarehouse = 'DF-Acer'; // Default warehouse selection
-  String _selectedDateFilter = 'Today';
+
   String _selectedCategory = 'All'; // Add category filter
 
 
@@ -350,31 +350,7 @@ class _SbReportView extends State<SbReportView> {
 
 
 
-// Helper method to create each row of the total box
-  Widget _buildTotalItem(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
 
 

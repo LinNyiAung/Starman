@@ -37,12 +37,12 @@ class _RsReportView extends State<RsReportView> {
   int? _reamaingDay;
   LastSubscriptionModel? _lastSubscriptionModel;
   String _selectedWarehouse = 'DF-Acer'; // Default warehouse selection
-  String _selectedDateFilter = 'Today';
+
   String _selectedCategory = 'All'; // Add category filter
 
 
 
-  List<Map<String, dynamic>> starSBData = [];
+  List<Map<String, dynamic>> starRSData = [];
   List<String> _categories = ['All']; // List to hold unique categories
 
   @override
@@ -58,17 +58,19 @@ class _RsReportView extends State<RsReportView> {
     if (_reamaingDay! < 10) {
       _remainingBox();
     }
-    await _loadSbDataFromFile(); // Load initial data
-    await _updateCategories(); // Update categories when data is loaded
+      if(starRSData.isNotEmpty){
+        await _loadRsDataFromFile(); // Load initial data
+        await _updateCategories();// Update categories when data is loaded
+      }
   }
 
-  Future<void> _loadSbDataFromFile() async {
+  Future<void> _loadRsDataFromFile() async {
     try {
       // Load data from the JSON file (assuming the path is known)
       final directory = await getApplicationDocumentsDirectory();
       final file = File('${directory.path}/StarSB.json');
       if (file.existsSync()) {
-        await _loadSbData(file);
+        await _loadRsData(file);
         await _updateCategories(); // Update categories after loading data
       } else {
         log('StarSB.json file not found');
@@ -80,8 +82,8 @@ class _RsReportView extends State<RsReportView> {
 
   // Method to update the list of categories from loaded data
   Future<void> _updateCategories() async{
-    if (starSBData.isNotEmpty) {
-      List<dynamic> stockBalanceList = await starSBData;
+    if (starRSData.isNotEmpty) {
+      List<dynamic> stockBalanceList = await starRSData;
       Set<String> categoriesSet = stockBalanceList.map((item) => item['starCategoryName'] as String).toSet();
       setState(() {
         _categories = ['All', ...categoriesSet]; // Add 'All' as a default option
@@ -104,7 +106,7 @@ class _RsReportView extends State<RsReportView> {
             setState(() {
               _selectedWarehouse = newValue!;
               _selectedCategory = 'All'; // Reset category filter
-              starSBData = []; // Clear data immediately
+              starRSData = []; // Clear data immediately
               _categories = ['All']; // Clear categories immediately
             });
 
@@ -161,7 +163,7 @@ class _RsReportView extends State<RsReportView> {
 
   // Filtered Stock Balance List
   Widget _buildStockBalanceList() {
-    if (starSBData.isEmpty) {
+    if (starRSData.isEmpty) {
       return const Center(
         child: Text(
           'No data available, click the download button.',
@@ -171,7 +173,7 @@ class _RsReportView extends State<RsReportView> {
     }
 
     // Filter the list based on the selected category
-    List<dynamic> starStockBalanceList = starSBData.where((item) {
+    List<dynamic> starStockBalanceList = starRSData.where((item) {
       return _selectedCategory == 'All' || item['starCategoryName'] == _selectedCategory;
     }).toList();
 
@@ -290,8 +292,8 @@ class _RsReportView extends State<RsReportView> {
 // Total Quantity and Amount Box with Category Filter
   Widget _buildTotalAmountBox() {
     // Filter the data based on the selected category
-    List<dynamic> filteredStockBalanceList = starSBData.isNotEmpty
-        ? starSBData.where((item) {
+    List<dynamic> filteredStockBalanceList = starRSData.isNotEmpty
+        ? starRSData.where((item) {
       return item['starCategoryName']  == _selectedCategory;
     }).toList() : [];
 
@@ -331,31 +333,7 @@ class _RsReportView extends State<RsReportView> {
     );
   }
 
-// Helper method to create each row of the total box
-  Widget _buildTotalItem(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 
 
 
@@ -496,7 +474,7 @@ class _RsReportView extends State<RsReportView> {
           final outFile = File(filename);
           await outFile.create(recursive: true);
           await outFile.writeAsBytes(file.content as List<int>);
-          await _loadSbData(outFile);
+          await _loadRsData(outFile);
           log('File created: ${outFile.path}');
         } else {
           // If it's a directory, ensure it exists
@@ -512,7 +490,7 @@ class _RsReportView extends State<RsReportView> {
     }
   }
 
-  Future<void> _loadSbData(File file) async {
+  Future<void> _loadRsData(File file) async {
     try {
       // Read the file
       String jsonData = await file.readAsString();
@@ -523,7 +501,7 @@ class _RsReportView extends State<RsReportView> {
       if (parsedJson is List) {
         // If it's a list, handle it as such
         setState(() {
-          starSBData = parsedJson
+          starRSData = parsedJson
               .map<Map<String, dynamic>>((item) => Map<String, dynamic>.from(item))
               .toList();
         });
@@ -531,7 +509,7 @@ class _RsReportView extends State<RsReportView> {
         // If it's a map, adjust your logic accordingly
         setState(() {
           // Assuming you want to store the map in a list format
-          starSBData = [parsedJson];
+          starRSData = [parsedJson];
         });
       }
 
