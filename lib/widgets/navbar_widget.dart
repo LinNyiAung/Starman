@@ -112,6 +112,12 @@ class NavBar extends StatelessWidget {
             _listTile("ပေးရန်ရှိအစီရင်ခံစာ", Icons.money, () {
               Get.offAndToNamed('osreport');
             }),
+            _listTile("ရရန်ရှိအစီရင်ခံစာ", Icons.money, () {
+              Get.offAndToNamed('ocreport');
+            }),
+            _listTile("PaymentDetail Report", Icons.money, () {
+              Get.offAndToNamed('spreport');
+            }),
             _listTile("Setting", Icons.settings, () {}),
           ],
         ),

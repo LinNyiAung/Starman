@@ -11,12 +11,14 @@ import 'package:starman/views/report_view/cf_report_view.dart';
 import 'package:starman/views/report_view/exp_report_view.dart';
 import 'package:starman/views/report_view/np_report_view.dart';
 import 'package:starman/views/report_view/ns_report_view.dart';
+import 'package:starman/views/report_view/oc_report_view.dart';
 import 'package:starman/views/report_view/os_report_view.dart';
 import 'package:starman/views/report_view/pi_report_view.dart';
 import 'package:starman/views/report_view/profitlost_report_view.dart';
 import 'package:starman/views/report_view/rs_report_view.dart';
 import 'package:starman/views/report_view/sb_report_view.dart';
 import 'package:starman/views/report_view/si_report_view.dart';
+import 'package:starman/views/report_view/sp_report_view.dart';
 import 'package:starman/views/starid_view.dart';
 import 'package:starman/views/passcode_view.dart';
 import 'package:starman/views/splashscreen.dart';
@@ -49,6 +51,8 @@ class MyApp extends StatelessWidget {
     GetPage(name: '/rsreport', page: () => RsReportView()),
     GetPage(name: '/sbreport', page: () => SbReportView()),
     GetPage(name: '/osreport', page: () => OsReportView()),
+    GetPage(name: '/ocreport', page: () => OcReportView()),
+    GetPage(name: '/spreport', page: () => SpReportView()),
   ];
 
   MyApp({super.key});
