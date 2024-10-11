@@ -1,84 +1,83 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:archive/archive.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:starman/models/cfd_model/cfd_model.dart';
+import 'package:starman/controllers/fusion_controller.dart';
 import 'package:starman/models/last_subscription_model/last_subscription_model.dart';
 import 'package:starman/models/star_group_model/star_group_model.dart';
-import 'package:starman/models/star_links_model/star_links_model.dart';
 import 'package:starman/widgets/navbar_widget.dart';
-import '../../controllers/fusion_controller.dart';
 
 
 late SharedPreferences prefs;
 StarGroupModel? _starGroupModel;
+FusionController fusionController = FusionController();
 
 class CfDailyReportView extends StatefulWidget {
-  const CfDailyReportView({Key? key}) : super(key: key);
+  const CfDailyReportView({super.key});
 
   @override
-  State<CfDailyReportView> createState() => _CfDailyReportViewState();
+  State<CfDailyReportView> createState() => _CfDailyReportView();
 }
 
-class _CfDailyReportViewState extends State<CfDailyReportView> {
-  final FusionController fusionController = FusionController();
-  int? _remainingDay;
-  List<String> _warehouse = [];
+// Map of warehouse names to user IDs
+final Map<String, String> warehouseToUserIdMap = {
+  "DF-Acer": "56B7-1E7F-F68A-4BE8",
+  "Asus_black": "5D3A-7D53-1EF7-67A1",
+  "DF Asus Small": "BF76-FE5F-6DD0-9FFD",
+  "DF Asus HDD": "4CAD-BDAD-478F-4B49",
+};
+
+
+
+class _CfDailyReportView extends State<CfDailyReportView> {
+  int? _reamaingDay;
   LastSubscriptionModel? _lastSubscriptionModel;
-  String _selectedWarehouse = "Warso"; // Default warehouse selection
-  String _selectedDateFilter = 'Today'; // Default date filter selection
-  List<StarLinksModel>? _starLinksModel;
-  CfdModel? thisMonthData;
-  List<CfdModel>? _cfDList;
-  List<CfdModel>? _displayedCfDList;
-  bool _showingAllData = false;
+  String _selectedWarehouse = 'DF-Acer'; // Default warehouse selection
+  String _selectedDateFilter = 'Today';
+
+
+  List<Map<String, dynamic>> starCFDData = [];
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _initializeData();
   }
 
-
   Future<void> _initializeData() async {
+    await _getStarGroup();
+    await _getLastSubscription();
+    _reamaingDay = await _remainingDate();
+    if (_reamaingDay! < 10) {
+      _remainingBox();
+    }
+    await _loadNsDataFromFile(); // Load initial data
+  }
+
+  Future<void> _loadNsDataFromFile() async {
     try {
-      await _getStarGroup();
-      await _getLastSubscription();
-      await _getStarLinks();
-      await _getWarehouse();
-      await _getCfDData();
-      _updateDisplayedList();
-      _remainingDay = await _remainingDate();
-      if (_remainingDay != null && _remainingDay! < 10) {
-        _remainingBox();
+      // Load data from the JSON file (assuming the path is known)
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/StarNS.json');
+      if (file.existsSync()) {
+        await _loadNsData(file);
+      } else {
+        log('StarNs.json file not found');
       }
     } catch (e) {
-      log('Error in _initializeData: $e');
+      log('Error loading data: $e');
     }
   }
-
-  void _updateDisplayedList() {
-    setState(() {
-      if (_cfDList != null) {
-        _displayedCfDList = _showingAllData ? _cfDList : _cfDList!.take(10).toList();
-      }
-    });
-  }
-
-  Future<void> _refreshData() async {
-    setState(() {
-      _showingAllData = true;
-    });
-    _updateDisplayedList();
-    return Future.delayed(Duration(seconds: 1));
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -88,86 +87,154 @@ class _CfDailyReportViewState extends State<CfDailyReportView> {
             ? null
             : NavBar(
           starId: _starGroupModel!.starId.toString(),
-          reaminingDate: _remainingDay.toString(),
+          reaminingDate: _reamaingDay.toString(),
         ),
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'နေ့အလိုက်ဝင်ငွေထွက်ငွေအစီရင်ခံစာ',
-            style: TextStyle(fontSize: size(0.045)),
+            style: TextStyle(fontSize: 18),
           ),
           actions: [
             IconButton(
               onPressed: () async {
-                await _getCfDData();
+                await _downLoadData();
               },
               icon: Icon(
                 Icons.cloud_download,
-                size: MediaQuery.of(context).size.width * 0.07,
+                size: MediaQuery.sizeOf(context).width * 0.07,
               ),
             ),
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.03,
+              width: MediaQuery.sizeOf(context).width * 0.03,
             ),
           ],
           backgroundColor: Colors.grey[600],
         ),
         body: _starGroupModel == null
-            ? const Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-          onRefresh: _refreshData,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15),
-            child: ListView(
-              children: [
-                _buildWarehouseDropdown(),
-                const SizedBox(height: 1.5),
-                _totalCashInOut(89400, 0),
-                const SizedBox(height: 2),
-                _buildTableHeader(),
-                _buildTableData(),
-              ],
-            ),
+            ? const Center(
+          child: CircularProgressIndicator(),
+        )
+            : Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15),
+          child: ListView(
+            children: [
+              _buildWarehouseDropdown(),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+
+                  // Spacing between dropdowns
+                  Expanded(
+                    child: _buildDateFilterDropdown(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildTotalAmountBox(),
+              const SizedBox(height: 10),
+              _buildNetSaleList(),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildWarehouseDropdown() {
-    _warehouse = _warehouse.toSet().toList();
 
-    if (!_warehouse.contains(_selectedWarehouse) && _warehouse.isNotEmpty) {
-      _selectedWarehouse = _warehouse[0];
+
+
+
+
+
+  Widget _buildNetSaleList() {
+    // Filter the data according to the selected date filter
+    List<Map<String, dynamic>> filteredData = starCFDData
+        .where((item) => item['starFilter'] == _selectedDateFilter)
+        .toList();
+
+    if (filteredData.isEmpty || filteredData[0]['starCFByDateDetailList'] == null) {
+      return const Center(
+        child: Text(
+          'No data available, click the download button.',
+          style: TextStyle(fontSize: 16, color: Colors.redAccent),
+        ),
+      );
     }
 
+    List<dynamic> starNSItemList = filteredData[0]['starCFByDateDetailList'];
+
+    return Column(
+      children: [
+        // Header row with titles
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+          color: Colors.grey[300],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Expanded(flex: 1, child: Text('စဉ်', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('နေ့စွဲ', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('၀င်ငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ထွက်ငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
+              Expanded(flex: 2, child: Text('ကျန်ငွေ', style: TextStyle(fontWeight: FontWeight.bold))),
+            ],
+          ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: starNSItemList.length,
+          itemBuilder: (context, index) {
+            var item = starNSItemList[index];
+            return Container(
+              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(flex: 1, child: Text('${index + 1}')),
+                  Expanded(flex: 2, child: Text(item['starDate'] ?? '')),
+                  Expanded(flex: 2, child: Text('${item['starIncome']} MMK')),
+                  Expanded(flex: 2, child: Text('${item['starExpense']} MMK')),
+                  Expanded(flex: 2, child: Text('${item['starBalance']} MMK')),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+
+
+
+  Widget _buildWarehouseDropdown() {
     return Row(
       children: [
-        _warehouse.isNotEmpty
-            ? DropdownButton<String>(
+        DropdownButton<String>(
           value: _selectedWarehouse,
           onChanged: (String? newValue) {
-            if (newValue != null) {
-              setState(() {
-                _selectedWarehouse = newValue;
-              });
-            }
+            setState(() {
+              _selectedWarehouse = newValue!;
+              // Reset user name filter on warehouse change
+            });
           },
-          items: _warehouse.map<DropdownMenuItem<String>>((String value) {
+          items: warehouseToUserIdMap.keys
+              .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   color: Colors.black,
                 ),
               ),
             );
           }).toList(),
-          underline: const SizedBox(),
+          underline: const SizedBox(), // Removes underline from DropdownButton
           style: const TextStyle(color: Colors.black, fontSize: 13),
-        )
-            : const SizedBox.shrink(),
+        ),
         const Spacer(),
         Text(
           DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now()),
@@ -181,165 +248,146 @@ class _CfDailyReportViewState extends State<CfDailyReportView> {
     );
   }
 
-  double size(double factor) {
-    return MediaQuery.of(context).size.width * factor;
+
+  Widget _buildDateFilterDropdown() {
+    return DropdownButton<String>(
+      value: _selectedDateFilter,
+      onChanged: (String? newValue) {
+        setState(() {
+          _selectedDateFilter = newValue!;
+        });
+      },
+      items: <String>['Today', 'Yesterday', 'This Month', 'Last Month']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Colors.black,
+            ),
+          ),
+        );
+      }).toList(),
+      underline: const SizedBox(), // Removes underline from DropdownButton
+      style: const TextStyle(color: Colors.black, fontSize: 13),
+      dropdownColor: Colors.white,
+    );
   }
 
-  Widget _totalCashInOut(int cashInPrice, int cashOutPrice) {
+
+
+
+
+
+// Method to build the Total Amount Box
+  Widget _buildTotalAmountBox() {
+    double totalIncome = 0;
+    double totalExpense = 0;
+    double totalBalance = 0;
+
+    // Filter the data according to the selected date filter
+    List<Map<String, dynamic>> filteredData = starCFDData
+        .where((item) => item['starFilter'] == _selectedDateFilter)
+        .toList();
+
+    if (filteredData.isNotEmpty && filteredData[0]['starCFByDateDetailList'] != null) {
+      List<dynamic> starNSItemList = filteredData[0]['starCFByDateDetailList'];
+
+      // Calculate the total invoices, total amount, and total paid amount
+      totalIncome = starNSItemList.fold(0, (sum, item) => sum + (item['starIncome'] as num).toDouble());
+      totalExpense = starNSItemList.fold(0, (sum, item) => sum + (item['starExpense'] as num).toDouble());
+      totalBalance = starNSItemList.fold(0, (sum, item) => sum + (item['starBalance'] as num).toDouble());
+    }
+
     return Container(
-      color: Colors.grey[300],
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-            vertical: MediaQuery.of(context).size.width * 0.03),
-        child: Row(
-          children: [
-            Expanded(child: _totalCash("စုစုပေါင်းငွေအဝင်", cashInPrice)),
-            Expanded(child: _totalCash("စုစုပေါင်းငွေအထွက်", cashOutPrice)),
-          ],
-        ),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[300],
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
-
-  Widget _totalCash(String title, int price) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: MediaQuery.of(context).size.width * 0.038,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        SizedBox(
-          height: MediaQuery.of(context).size.width * 0.02,
-        ),
-        Text(
-          '$price MMK',
-          style: TextStyle(
-            fontSize: MediaQuery.of(context).size.width * 0.038,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTableHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(12.0),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(child: Text('စဉ်', style: _tableHeaderStyle())),
-          Expanded(child: Text('နေ့စွဲ', style: _tableHeaderStyle())),
-          Expanded(child: Text('ငွေ(MMK)', style: _tableHeaderStyle())),
-          Expanded(child: Text('ထုတ်ငွေ(MMK)', style: _tableHeaderStyle())),
-          Expanded(child: Text('ကျန်ငွေ(MMK)', style: _tableHeaderStyle())),
+          _buildTotalItem('စုစုပေါင်းဝင်ငွေ', '$totalIncome ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
+          _buildTotalItem('စုစုပေါင်းထွက်ငွေ', '$totalExpense ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
+          _buildTotalItem('စုစုပေါင်းကျန်ငွေ', '$totalBalance ${filteredData.isNotEmpty ? filteredData[0]['starCurrency'] : ''}'),
         ],
       ),
     );
   }
 
-  TextStyle _tableHeaderStyle() {
-    return TextStyle(
-      fontSize: MediaQuery.of(context).size.width * 0.035,
-      fontWeight: FontWeight.bold,
-      color: Colors.black,
-    );
-  }
 
-  Widget _buildTableData() {
-    if (_displayedCfDList == null || _displayedCfDList!.isEmpty) {
-      return const Center(child: Text('No data available'));
-    }
-    int rowIndex = 0;
-
-    return Table(
-      children: _displayedCfDList!.map((cfdModel) {
-        return cfdModel.starCFByDateDetailList.asMap().entries.map((entry) {
-          rowIndex++;
-          final index = entry.key;
-          final detail = entry.value;
-          return TableRow(
-            children: [
-              _buildTableCell(rowIndex.toString()),
-              _buildTableCell(detail.starDate),
-              _buildTableCell(detail.starIncome.toString()),
-              _buildTableCell(detail.starExpense.toString()),
-              _buildTableCell(detail.starBalance.toString()),
-            ],
-          );
-        }).toList();
-      }).expand((rows) => rows).toList(),
-    );
-  }
-
-
-  Widget _buildTableCell(String text) {
+// Helper method to create each row of the total box
+  Widget _buildTotalItem(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: MediaQuery.of(context).size.width * 0.03,
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
 
+
+
+
+  //* StarGroup *//
   Future<void> _getStarGroup() async {
-    try {
-      prefs = await SharedPreferences.getInstance();
-      String? starGroupJson = prefs.getString('_starGroup');
-      if (starGroupJson != null) {
-        Map<String, dynamic> starGroupMap = jsonDecode(starGroupJson);
-        StarGroupModel starGroup = StarGroupModel.fromJson(starGroupMap);
-        setState(() {
-          _starGroupModel = starGroup;
-        });
-      } else {
-        log('No star group found in preferences');
-      }
-    } catch (e) {
-      log('Error in _getStarGroup: $e');
+    prefs = await SharedPreferences.getInstance(); // Use the global prefs
+    String? starGroupJson = prefs.getString('_starGroup');
+    if (starGroupJson != null) {
+      Map<String, dynamic> starGroupMap = jsonDecode(starGroupJson);
+      StarGroupModel starGroup = StarGroupModel.fromJson(starGroupMap);
+      setState(() {
+        _starGroupModel = starGroup;
+      });
+    } else {
+      log('No star group found in preferences');
     }
   }
 
+  //* LastSubscription *//
   Future<void> _getLastSubscription() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? lastSubscriptionJson = prefs.getString('_lastSubscription');
-      if (lastSubscriptionJson != null) {
-        Map<String, dynamic> lastSubscriptionMap = jsonDecode(lastSubscriptionJson);
-        LastSubscriptionModel lastSubscription = LastSubscriptionModel.fromJson(lastSubscriptionMap);
-        setState(() {
-          _lastSubscriptionModel = lastSubscription;
-        });
-      } else {
-        log('No last subscription found in preferences');
-      }
-    } catch (e) {
-      log('Error in _getLastSubscription: $e');
+    final prefs = await SharedPreferences.getInstance();
+    String? lastSubscriptionJson = prefs.getString('_lastSubscription');
+
+    if (lastSubscriptionJson != null) {
+      Map<String, dynamic> lastSubscriptionMap =
+      jsonDecode(lastSubscriptionJson);
+      LastSubscriptionModel lastSubscription =
+      LastSubscriptionModel.fromJson(lastSubscriptionMap);
+      setState(() {
+        _lastSubscriptionModel = lastSubscription;
+      });
+    } else {
+      log('No last subscription found in preferences');
     }
   }
 
-  Future<int?> _remainingDate() async {
-    try {
-      if (_lastSubscriptionModel?.licenseInfo?.endDate == null) {
-        log('End date is null');
-        return null;
-      }
-      String endDateString = _lastSubscriptionModel!.licenseInfo!.endDate!;
-      DateTime endDate = DateFormat('dd/MM/yyyy').parse(endDateString);
-      DateTime currentDate = DateTime.now();
-      int remainingDays = endDate.difference(currentDate).inDays;
-      return remainingDays;
-    } catch (e) {
-      log('Error in _remainingDate: $e');
-      return null;
-    }
+  Future<int> _remainingDate() async {
+    String endDateString =
+    (_lastSubscriptionModel?.licenseInfo?.endDate).toString();
+    DateTime endDate = DateFormat('dd/MM/yyyy').parse(endDateString);
+    DateTime currentDate = DateTime.now();
+    int remainingDays = endDate.difference(currentDate).inDays;
+    return remainingDays;
   }
 
   Future<void> _remainingBox() async {
@@ -352,20 +400,28 @@ class _CfDailyReportViewState extends State<CfDailyReportView> {
             children: [
               Icon(
                 Icons.circle_notifications,
-                color: Colors.redAccent,
-                size: 30,
+                color: Colors.red,
               ),
               SizedBox(width: 10),
-              Text('Day Remaining'),
+              Text(
+                'Warning!',
+                style: TextStyle(color: Colors.red, fontSize: 16),
+              ),
             ],
           ),
-          content: Text('Your subscription is only ${_remainingDay.toString()} days left'),
-          actions: <Widget>[
+          content: const Text(
+            'Your subscription is about to expire. Please renew your subscription.',
+            style: TextStyle(color: Colors.black, fontSize: 13),
+          ),
+          actions: [
             TextButton(
-              child: const Text('Close'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              child: const Text(
+                'OK',
+                style: TextStyle(fontSize: 14),
+              ),
             ),
           ],
         );
@@ -373,157 +429,92 @@ class _CfDailyReportViewState extends State<CfDailyReportView> {
     );
   }
 
-  Future<void> _getCfDData() async {
-    try {
-      await _downLoadData();
-      await _getCfD("This Month");
-      await _getStarLinks();
-
-    } catch (e) {
-      log('Error in _getCfDData: $e');
-    }
-  }
-
   Future<void> _downLoadData() async {
     try {
-      var file = await fusionController.reportData("BF76-FE5F-6DD0-9FFD", "CFD");
-      if (file != null && await file.exists()) {
-        log('Downloaded file exists at: ${file.path}');
+      // Get the userId based on the selected warehouse
+      String userId = warehouseToUserIdMap[_selectedWarehouse] ?? '';
+
+      var file = await fusionController.reportData(
+        userId,
+        "CFD",
+      );
+
+      if (file != null) {
+        log('Downloaded file path: ${file.path}');
+        // Extract the ZIP file
         await extractZipFile(file);
-        final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/StarCFByDate.json';
-        if (await File(filePath).exists()) {
-          String cfdJson = await readJsonFile(filePath);
-          await prefs.setString("_satrCFD", cfdJson);
-          log("File StarCFByDate.json found and data stored successfully.");
-        } else {
-          log("File StarCFByDate.json not found after extraction");
-        }
+        log("Extraction complete");
       } else {
-        log("File download failed or file does not exist.");
+        log("File download failed");
       }
     } catch (e) {
-      log('Error in _downLoadData: $e');
+      log('Error during download: $e');
     }
   }
+
+
 
   Future<void> extractZipFile(File zipFile) async {
     try {
+      // Get the application's document directory to extract the files
       final directory = await getApplicationDocumentsDirectory();
       final extractionPath = directory.path;
+      log('Extraction path: $extractionPath');
+
+      // Ensure the extraction directory exists
       await Directory(extractionPath).create(recursive: true);
+
+      // Decode the ZIP file with password
       Archive archive = ZipDecoder().decodeBytes(
         zipFile.readAsBytesSync(),
         verify: true,
         password: 'Digital Fusion 2018',
       );
+
+      log('Archive contains ${archive.length} files:');
       for (final file in archive) {
+        log('File: ${file.name}, Size: ${file.size}');
+
         final filename = '$extractionPath/${file.name}';
         if (file.isFile) {
           final outFile = File(filename);
           await outFile.create(recursive: true);
           await outFile.writeAsBytes(file.content as List<int>);
+          await _loadNsData(outFile);
+          log('File created: ${outFile.path}');
         } else {
+          // If it's a directory, ensure it exists
           await Directory(filename).create(recursive: true);
-        }
-      }
-    } catch (e) {
-      log('Error in extractZipFile: $e');
-    }
-  }
-
-  Future<void> _getWarehouse() async {
-    try {
-      if (_starLinksModel != null) {
-        setState(() {
-          _warehouse = _starLinksModel!
-              .map((link) => link.warehouseName ?? '')
-              .where((name) => name.isNotEmpty)
-              .toList();
-        });
-      }
-    } catch (e) {
-      log('Error in _getWarehouse: $e');
-    }
-  }
-
-  Future<String> readJsonFile(String path) async {
-    try {
-      final file = File(path);
-      if (await file.exists()) {
-        return await file.readAsString();
-      } else {
-        throw Exception("File not found at $path");
-      }
-    } catch (e) {
-      log('Error in readJsonFile: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> _getCfD(String date) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      String? starCfD = prefs.getString('_satrCFD');
-      log("Raw starCfD data: ${starCfD ?? 'null'}");
-
-      if (starCfD == null || starCfD.isEmpty) {
-        log("No data or empty data found in SharedPreferences for '_satrCFD'.");
-        return;
-      }
-
-      var decodedJson = jsonDecode(starCfD);
-      log("Decoded JSON type: ${decodedJson.runtimeType}");
-
-      if (decodedJson is! List) {
-        log("Decoded JSON is not a List. Actual type: ${decodedJson.runtimeType}");
-        return;
-      }
-
-      List<CfdModel> cfDData = [];
-      for (var item in decodedJson) {
-        try {
-          cfDData.add(CfdModel.fromJson(item));
-        } catch (e) {
-          log("Error parsing CfdModel: $e");
+          log('Directory created: $filename');
         }
       }
 
-      log("Parsed CfdModel list length: ${cfDData.length}");
+      log('ZIP file extracted successfully to $extractionPath');
+    } catch (e, stacktrace) {
+      log('Error during extraction: $e');
+      log('Stacktrace: $stacktrace');
+    }
+  }
 
+  Future<void> _loadNsData(File file) async {
+    try {
+      // Read the file
+      String jsonData = await file.readAsString();
+
+      // Decode the JSON
+      List<dynamic> parsedJson = jsonDecode(jsonData);
+
+      // Assuming each item in the list is a map and filtering by selectedDateFilter
       setState(() {
-        _cfDList = cfDData;
-        thisMonthData = cfDData.firstWhere(
-              (model) => model.starFilter == date,
-          orElse: () => CfdModel(
-            starCFByDateDetailList: [],
-            starTotalIncome: 0.0,
-            starTotalExpense: 0.0,
-            starTotalBalance: 0.0,
-            starFilter: '',
-            starCurrency: '',
-          ),
-        );
+        starCFDData = parsedJson
+            .map<Map<String, dynamic>>(
+                (item) => Map<String, dynamic>.from(item))
+            .toList();
       });
 
-      log("Data for the specified date found: $thisMonthData");
+      log('Data loaded successfully from ${file.path}');
     } catch (e) {
-      log('Error in _getCfD: $e');
-    }
-  }
-//* StarLinks *//
-  Future<void> _getStarLinks() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? starLinksJson = prefs.getString('_starLinks');
-    if (starLinksJson != null) {
-      var decodedJson = jsonDecode(starLinksJson);
-      List<Map<String, dynamic>> starLinksMap =
-      List<Map<String, dynamic>>.from(decodedJson);
-      List<StarLinksModel> starLinks =
-      StarLinksModel.fromJsonList(starLinksMap);
-      _starLinksModel = starLinks;
-    } else {
-      log("No star links found in preferences");
+      log('Error parsing JSON data: $e');
     }
   }
 }
